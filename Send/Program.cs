@@ -11,7 +11,7 @@ namespace Send
             var message = "";
             var closeApp = false;
             Console.WriteLine("----------Sender----------");
-            Console.WriteLine("Write a message to send. Each '.' is one second of work for the task.");
+            Console.WriteLine("Write a message to send. Each \".\" is one second of work for the task.");
             Console.WriteLine("[Enter] to exit");
 
             do
@@ -20,20 +20,24 @@ namespace Send
                 using (var connection = factory.CreateConnection())
                 using (var channel = connection.CreateModel())
                 {
-                    channel.QueueDeclare(queue: "task_queue",
-                        durable: true,
-                        exclusive: false,
-                        autoDelete: false,
-                        arguments: null);
-                    var body = Encoding.UTF8.GetBytes(message);
+                    if (!string.IsNullOrEmpty(message))
+                    {
 
-                    var properties = channel.CreateBasicProperties();
-                    properties.Persistent = true;
+                        channel.QueueDeclare(queue: "task_queue",
+                            durable: true,
+                            exclusive: false,
+                            autoDelete: false,
+                            arguments: null);
+                        var body = Encoding.UTF8.GetBytes(message);
 
-                    channel.BasicPublish(exchange: "",
-                                         routingKey: "task_queue",
-                                         basicProperties: properties,
-                                         body: body);
+                        var properties = channel.CreateBasicProperties();
+                        properties.Persistent = true;
+
+                        channel.BasicPublish(exchange: "",
+                            routingKey: "task_queue",
+                            basicProperties: properties,
+                            body: body);
+                    }
                 }
                 message = Console.ReadLine();
                 if (string.IsNullOrEmpty(message))
